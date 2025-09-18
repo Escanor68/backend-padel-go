@@ -1,0 +1,176 @@
+### Ejemplos de uso de la API de Padel
+
+### Variables
+@baseUrl = http://localhost:8080/api/v1
+@token = your_jwt_token_here
+
+### 1. Registro de usuario
+POST {{baseUrl}}/auth/register
+Content-Type: application/json
+
+{
+  "email": "usuario@ejemplo.com",
+  "password": "password123",
+  "first_name": "Juan",
+  "last_name": "Pérez",
+  "phone": "+5491123456789"
+}
+
+### 2. Login de usuario
+POST {{baseUrl}}/auth/login
+Content-Type: application/json
+
+{
+  "email": "usuario@ejemplo.com",
+  "password": "password123"
+}
+
+### 3. Obtener todas las canchas
+GET {{baseUrl}}/courts
+
+### 4. Obtener cancha por ID
+GET {{baseUrl}}/courts/1
+
+### 5. Buscar canchas cercanas
+GET {{baseUrl}}/courts/nearby?lat=-34.6037&lng=-58.3816&radius=10
+
+### 6. Buscar canchas con filtros
+GET {{baseUrl}}/courts/search?min_price=50&max_price=200&has_lighting=true&surface=artificial
+
+### 7. Obtener disponibilidad de cancha
+GET {{baseUrl}}/courts/1/availability?date=2024-03-20
+
+### 8. Crear cancha (requiere autenticación)
+POST {{baseUrl}}/owner/courts
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "name": "Cancha de Padel Premium",
+  "address": "Av. Corrientes 1234, Buenos Aires",
+  "latitude": -34.6037,
+  "longitude": -58.3816,
+  "price_per_hour": 150.00,
+  "description": "Cancha de padel con iluminación LED y superficie artificial",
+  "surface": "artificial",
+  "has_lighting": true,
+  "is_indoor": false,
+  "amenities": ["vestuarios", "estacionamiento", "bar"],
+  "max_players": 4,
+  "rules": ["No fumar", "Respetar horarios", "Usar calzado deportivo"],
+  "cancellation_policy": "Cancelación gratuita hasta 24hs antes",
+  "business_hours": [
+    {
+      "day_of_week": 1,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 2,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 3,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 4,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 5,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 6,
+      "open_time": "08:00",
+      "close_time": "23:00"
+    },
+    {
+      "day_of_week": 0,
+      "open_time": "09:00",
+      "close_time": "22:00"
+    }
+  ]
+}
+
+### 9. Obtener mis canchas (requiere autenticación)
+GET {{baseUrl}}/owner/courts
+Authorization: Bearer {{token}}
+
+### 10. Crear reserva (requiere autenticación)
+POST {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "court_id": 1,
+  "date": "2024-03-20",
+  "start_time": "10:00",
+  "end_time": "11:00",
+  "notes": "Reserva para partido de padel"
+}
+
+### 11. Obtener mis reservas (requiere autenticación)
+GET {{baseUrl}}/bookings
+Authorization: Bearer {{token}}
+
+### 12. Obtener reserva por ID (requiere autenticación)
+GET {{baseUrl}}/bookings/1
+Authorization: Bearer {{token}}
+
+### 13. Cancelar reserva (requiere autenticación)
+PUT {{baseUrl}}/bookings/1/cancel
+Authorization: Bearer {{token}}
+
+### 14. Crear reseña (requiere autenticación)
+POST {{baseUrl}}/reviews/courts/1
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "rating": 5,
+  "comment": "Excelente cancha, muy bien mantenida y con buena iluminación. Recomendada!"
+}
+
+### 15. Obtener reseñas de cancha
+GET {{baseUrl}}/courts/1/reviews
+
+### 16. Crear preferencia de pago (requiere autenticación)
+POST {{baseUrl}}/payments/preference
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "booking_id": 1,
+  "payer_email": "usuario@ejemplo.com"
+}
+
+### 17. Obtener estado de pago (requiere autenticación)
+GET {{baseUrl}}/payments/payment_id_here/status
+Authorization: Bearer {{token}}
+
+### 18. Obtener estadísticas de cancha (requiere autenticación)
+GET {{baseUrl}}/owner/courts/1/statistics
+Authorization: Bearer {{token}}
+
+### 19. Crear horarios especiales (requiere autenticación)
+POST {{baseUrl}}/owner/courts/1/special-hours
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{
+  "date": "2024-03-25",
+  "is_closed": true,
+  "reason": "Mantenimiento programado"
+}
+
+### 20. Obtener horarios especiales
+GET {{baseUrl}}/courts/1/special-hours?start_date=2024-03-01&end_date=2024-03-31
+
+### 21. Health Check
+GET http://localhost:8080/health

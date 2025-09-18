@@ -1,0 +1,67 @@
+version: '3.8'
+
+services:
+  # Base de datos MySQL
+  mysql:
+    image: mysql:8.0
+    container_name: padel-mysql
+    restart: unless-stopped
+    environment:
+      MYSQL_ROOT_PASSWORD: rootpassword
+      MYSQL_DATABASE: padel_db
+      MYSQL_USER: padel_user
+      MYSQL_PASSWORD: padel_password
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      - padel-network
+
+  # Aplicación Backend
+  backend:
+    build: .
+    container_name: padel-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - PORT=8080
+      - GIN_MODE=release
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_USER=padel_user
+      - DB_PASSWORD=padel_password
+      - DB_NAME=padel_db
+      - JWT_SECRET=your-super-secret-jwt-key
+      - MERCADOPAGO_ACCESS_TOKEN=your_mercadopago_access_token
+      - FRONTEND_URL=http://localhost:3000
+      - BACKEND_URL=http://localhost:8080
+    depends_on:
+      - mysql
+    networks:
+      - padel-network
+
+  # phpMyAdmin (opcional, para gestión de BD)
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: padel-phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: mysql
+      PMA_USER: padel_user
+      PMA_PASSWORD: padel_password
+    ports:
+      - "8081:80"
+    depends_on:
+      - mysql
+    networks:
+      - padel-network
+
+volumes:
+  mysql_data:
+
+networks:
+  padel-network:
+    driver: bridge
