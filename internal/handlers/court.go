@@ -101,7 +101,7 @@ func (h *CourtHandler) CreateCourt(c *gin.Context) {
 		return
 	}
 
-	court, err := h.courtService.CreateCourt(ownerID, req)
+	court, err := h.courtService.CreateCourt(ownerID, &req)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, models.NewErrorResponse("Failed to create court", err.Error()))
 		return
@@ -183,7 +183,7 @@ func (h *CourtHandler) UpdateCourt(c *gin.Context) {
 		return
 	}
 
-	court, err := h.courtService.UpdateCourt(uint(id), ownerID, req)
+	court, err := h.courtService.UpdateCourt(uint(id), ownerID, &req)
 	if err != nil {
 		if err.Error() == "court not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse("Court not found", err.Error()))
@@ -311,7 +311,7 @@ func (h *CourtHandler) SearchCourts(c *gin.Context) {
 		return
 	}
 
-	courts, err := h.courtService.SearchCourts(req)
+	courts, err := h.courtService.SearchCourts(&req)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Failed to search courts", err.Error()))
 		return

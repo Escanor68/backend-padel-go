@@ -51,7 +51,7 @@ func (h *BookingHandler) CreateBooking(c *gin.Context) {
 		return
 	}
 
-	booking, err := h.bookingService.CreateBooking(userIDUint, req)
+	booking, err := h.bookingService.CreateBooking(userIDUint, &req)
 	if err != nil {
 		if err.Error() == "court not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse("Court not found", err.Error()))
@@ -98,7 +98,7 @@ func (h *BookingHandler) GetUserBookings(c *gin.Context) {
 		return
 	}
 
-	bookings, err := h.bookingService.GetUserBookings(userIDUint, filters)
+	bookings, err := h.bookingService.GetUserBookings(userIDUint, &filters)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, models.NewErrorResponse("Failed to fetch bookings", err.Error()))
 		return

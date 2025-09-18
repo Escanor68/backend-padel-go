@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"backend-padel-go/internal/models"
+	"backend-padel-go/internal/utils"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func NewCourtService(db *gorm.DB) *CourtService {
 	return &CourtService{db: db}
 }
 
-func (s *CourtService) CreateCourt(ownerID uint, req models.CreateCourtRequest) (*models.Court, error) {
+func (s *CourtService) CreateCourt(ownerID uint, req *models.CreateCourtRequest) (*models.Court, error) {
 	// Crear cancha
 	court := models.Court{
 		Name:               req.Name,
@@ -91,7 +92,12 @@ func (s *CourtService) GetOwnerCourts(ownerID uint) ([]models.Court, error) {
 	return courts, nil
 }
 
-func (s *CourtService) UpdateCourt(id uint, ownerID uint, req models.UpdateCourtRequest) (*models.Court, error) {
+func (s *CourtService) UpdateCourt(id uint, ownerID uint, req *models.UpdateCourtRequest) (*models.Court, error) {
+	// Validar que el request no sea nil
+	if err := utils.ValidatePointer(req, "UpdateCourtRequest"); err != nil {
+		return nil, err
+	}
+
 	var court models.Court
 	if err := s.db.Where("id = ? AND owner_id = ?", id, ownerID).First(&court).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -103,6 +109,9 @@ func (s *CourtService) UpdateCourt(id uint, ownerID uint, req models.UpdateCourt
 	// Actualizar campos si se proporcionan
 	updates := make(map[string]interface{})
 	if req.Name != nil {
+		if err := utils.ValidateStringPointer(req.Name, "name"); err != nil {
+			return nil, err
+		}
 		updates["name"] = *req.Name
 	}
 	if req.Address != nil {
@@ -115,6 +124,9 @@ func (s *CourtService) UpdateCourt(id uint, ownerID uint, req models.UpdateCourt
 		updates["longitude"] = *req.Longitude
 	}
 	if req.PricePerHour != nil {
+		if err := utils.ValidateNumberPointer(req.PricePerHour, "price_per_hour"); err != nil {
+			return nil, err
+		}
 		updates["price_per_hour"] = *req.PricePerHour
 	}
 	if req.Description != nil {
@@ -136,6 +148,9 @@ func (s *CourtService) UpdateCourt(id uint, ownerID uint, req models.UpdateCourt
 		updates["amenities"] = req.Amenities
 	}
 	if req.MaxPlayers != nil {
+		if err := utils.ValidateIntPointer(req.MaxPlayers, "max_players"); err != nil {
+			return nil, err
+		}
 		updates["max_players"] = *req.MaxPlayers
 	}
 	if req.Rules != nil {
@@ -145,6 +160,9 @@ func (s *CourtService) UpdateCourt(id uint, ownerID uint, req models.UpdateCourt
 		updates["cancellation_policy"] = *req.CancellationPolicy
 	}
 	if req.IsActive != nil {
+		if err := utils.ValidateBoolPointer(req.IsActive, "is_active"); err != nil {
+			return nil, err
+		}
 		updates["is_active"] = *req.IsActive
 	}
 
@@ -198,7 +216,7 @@ func (s *CourtService) GetNearbyCourts(lat, lng, radius float64) ([]models.Court
 	return courts, nil
 }
 
-func (s *CourtService) SearchCourts(req models.SearchCourtsRequest) ([]models.Court, error) {
+func (s *CourtService) SearchCourts(req *models.SearchCourtsRequest) ([]*models.Court, error) {
 	query := s.db.Model(&models.Court{}).Where("is_active = ?", true)
 
 	if req.MinPrice != nil {
@@ -235,7 +253,7 @@ func (s *CourtService) SearchCourts(req models.SearchCourtsRequest) ([]models.Co
 		query = query.Where(haversineQuery, *req.Latitude, *req.Longitude, *req.Latitude, radius)
 	}
 
-	var courts []models.Court
+	var courts []*models.Court
 	if err := query.Preload("BusinessHours").Find(&courts).Error; err != nil {
 		return nil, errors.New("failed to search courts")
 	}
@@ -243,7 +261,7 @@ func (s *CourtService) SearchCourts(req models.SearchCourtsRequest) ([]models.Co
 	return courts, nil
 }
 
-func (s *CourtService) GetAvailability(courtID uint, date time.Time) ([]models.TimeSlot, error) {
+func (s *CourtService) GetAvailability(courtID uint, date time.Time) ([]*models.TimeSlot, error) {
 	// Obtener cancha
 	court, err := s.GetCourtByID(courtID)
 	if err != nil {
@@ -272,8 +290,8 @@ func (s *CourtService) GetAvailability(courtID uint, date time.Time) ([]models.T
 	return availableSlots, nil
 }
 
-func (s *CourtService) generateTimeSlots(openTime, closeTime string, pricePerHour float64) []models.TimeSlot {
-	var slots []models.TimeSlot
+func (s *CourtService) generateTimeSlots(openTime, closeTime string, pricePerHour float64) []*models.TimeSlot {
+	var slots []*models.TimeSlot
 	
 	// Parsear horarios
 	open, _ := time.Parse("15:04", openTime)
@@ -286,7 +304,7 @@ func (s *CourtService) generateTimeSlots(openTime, closeTime string, pricePerHou
 			break
 		}
 		
-		slots = append(slots, models.TimeSlot{
+		slots = append(slots, &models.TimeSlot{
 			StartTime: current.Format("15:04"),
 			EndTime:   next.Format("15:04"),
 			Available: true,
@@ -299,8 +317,8 @@ func (s *CourtService) generateTimeSlots(openTime, closeTime string, pricePerHou
 	return slots
 }
 
-func (s *CourtService) filterAvailableSlots(slots []models.TimeSlot, bookings []models.Booking) []models.TimeSlot {
-	availableSlots := make([]models.TimeSlot, 0)
+func (s *CourtService) filterAvailableSlots(slots []*models.TimeSlot, bookings []models.Booking) []*models.TimeSlot {
+	availableSlots := make([]*models.TimeSlot, 0)
 	
 	for _, slot := range slots {
 		isAvailable := true
@@ -319,7 +337,7 @@ func (s *CourtService) filterAvailableSlots(slots []models.TimeSlot, bookings []
 	return availableSlots
 }
 
-func (s *CourtService) isTimeSlotOverlapping(slot models.TimeSlot, booking models.Booking) bool {
+func (s *CourtService) isTimeSlotOverlapping(slot *models.TimeSlot, booking models.Booking) bool {
 	slotStart, _ := time.Parse("15:04", slot.StartTime)
 	slotEnd, _ := time.Parse("15:04", slot.EndTime)
 	bookingStart, _ := time.Parse("15:04", booking.StartTime)

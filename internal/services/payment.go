@@ -21,7 +21,7 @@ func NewPaymentService(db *gorm.DB) *PaymentService {
 	return &PaymentService{db: db}
 }
 
-func (s *PaymentService) CreatePreference(userID uint, req models.CreatePreferenceRequest) (*models.PreferenceResponse, error) {
+func (s *PaymentService) CreatePreference(userID uint, req *models.CreatePreferenceRequest) (*models.PreferenceResponse, error) {
 	// Verificar que la reserva existe y pertenece al usuario
 	var booking models.Booking
 	if err := s.db.Where("id = ? AND user_id = ?", req.BookingID, userID).Preload("Court").First(&booking).Error; err != nil {

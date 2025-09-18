@@ -16,7 +16,7 @@ func NewReviewService(db *gorm.DB) *ReviewService {
 	return &ReviewService{db: db}
 }
 
-func (s *ReviewService) CreateReview(courtID uint, userID uint, req models.CreateReviewRequest) (*models.ReviewResponse, error) {
+func (s *ReviewService) CreateReview(courtID uint, userID uint, req *models.CreateReviewRequest) (*models.ReviewResponse, error) {
 	// Verificar que la cancha existe
 	var court models.Court
 	if err := s.db.Where("id = ? AND is_active = ?", courtID, true).First(&court).Error; err != nil {
@@ -74,7 +74,7 @@ func (s *ReviewService) CreateReview(courtID uint, userID uint, req models.Creat
 	return response, nil
 }
 
-func (s *ReviewService) UpdateReview(reviewID uint, userID uint, req models.UpdateReviewRequest) (*models.ReviewResponse, error) {
+func (s *ReviewService) UpdateReview(reviewID uint, userID uint, req *models.UpdateReviewRequest) (*models.ReviewResponse, error) {
 	var review models.Review
 	if err := s.db.Where("id = ? AND user_id = ?", reviewID, userID).First(&review).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
@@ -149,15 +149,15 @@ func (s *ReviewService) DeleteReview(reviewID uint, userID uint) error {
 	return nil
 }
 
-func (s *ReviewService) GetCourtReviews(courtID uint) ([]models.ReviewResponse, error) {
+func (s *ReviewService) GetCourtReviews(courtID uint) ([]*models.ReviewResponse, error) {
 	var reviews []models.Review
 	if err := s.db.Where("court_id = ?", courtID).Preload("User").Order("created_at DESC").Find(&reviews).Error; err != nil {
 		return nil, errors.New("failed to fetch reviews")
 	}
 
-	var responses []models.ReviewResponse
+	var responses []*models.ReviewResponse
 	for _, review := range reviews {
-		responses = append(responses, models.ReviewResponse{
+		responses = append(responses, &models.ReviewResponse{
 			ID:        review.ID,
 			CourtID:   review.CourtID,
 			UserID:    review.UserID,

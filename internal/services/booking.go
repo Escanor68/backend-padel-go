@@ -17,7 +17,7 @@ func NewBookingService(db *gorm.DB) *BookingService {
 	return &BookingService{db: db}
 }
 
-func (s *BookingService) CreateBooking(userID uint, req models.CreateBookingRequest) (*models.BookingResponse, error) {
+func (s *BookingService) CreateBooking(userID uint, req *models.CreateBookingRequest) (*models.BookingResponse, error) {
 	// Verificar que la cancha existe
 	var court models.Court
 	if err := s.db.Where("id = ? AND is_active = ?", req.CourtID, true).First(&court).Error; err != nil {
@@ -102,7 +102,7 @@ func (s *BookingService) CreateBooking(userID uint, req models.CreateBookingRequ
 	return response, nil
 }
 
-func (s *BookingService) GetUserBookings(userID uint, filters models.GetBookingsRequest) ([]models.BookingResponse, error) {
+func (s *BookingService) GetUserBookings(userID uint, filters *models.GetBookingsRequest) ([]*models.BookingResponse, error) {
 	query := s.db.Model(&models.Booking{}).Where("user_id = ?", userID)
 
 	// Aplicar filtros
@@ -122,9 +122,9 @@ func (s *BookingService) GetUserBookings(userID uint, filters models.GetBookings
 	}
 
 	// Convertir a respuesta
-	var responses []models.BookingResponse
+	var responses []*models.BookingResponse
 	for _, booking := range bookings {
-		responses = append(responses, models.BookingResponse{
+		responses = append(responses, &models.BookingResponse{
 			ID:         booking.ID,
 			CourtID:    booking.CourtID,
 			UserID:     booking.UserID,

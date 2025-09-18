@@ -27,7 +27,7 @@ func NewAuthService(db *gorm.DB) *AuthService {
 	return &AuthService{db: db}
 }
 
-func (s *AuthService) Register(req models.RegisterRequest) (*models.AuthResponse, error) {
+func (s *AuthService) Register(req *models.RegisterRequest) (*models.AuthResponse, error) {
 	// Verificar si el usuario ya existe
 	var existingUser models.User
 	if err := s.db.Where("email = ?", req.Email).First(&existingUser).Error; err == nil {
@@ -77,7 +77,7 @@ func (s *AuthService) Register(req models.RegisterRequest) (*models.AuthResponse
 	}, nil
 }
 
-func (s *AuthService) Login(req models.LoginRequest) (*models.AuthResponse, error) {
+func (s *AuthService) Login(req *models.LoginRequest) (*models.AuthResponse, error) {
 	var user models.User
 	if err := s.db.Where("email = ? AND is_active = ?", req.Email, true).First(&user).Error; err != nil {
 		return nil, errors.New("invalid credentials")

@@ -51,7 +51,7 @@ func (h *PaymentHandler) CreatePreference(c *gin.Context) {
 		return
 	}
 
-	preference, err := h.paymentService.CreatePreference(userIDUint, req)
+	preference, err := h.paymentService.CreatePreference(userIDUint, &req)
 	if err != nil {
 		if err.Error() == "booking not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse("Booking not found", err.Error()))

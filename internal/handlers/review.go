@@ -59,7 +59,7 @@ func (h *ReviewHandler) CreateReview(c *gin.Context) {
 		return
 	}
 
-	review, err := h.reviewService.CreateReview(uint(courtID), userIDUint, req)
+	review, err := h.reviewService.CreateReview(uint(courtID), userIDUint, &req)
 	if err != nil {
 		if err.Error() == "court not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse("Court not found", err.Error()))
@@ -115,7 +115,7 @@ func (h *ReviewHandler) UpdateReview(c *gin.Context) {
 		return
 	}
 
-	review, err := h.reviewService.UpdateReview(uint(reviewID), userIDUint, req)
+	review, err := h.reviewService.UpdateReview(uint(reviewID), userIDUint, &req)
 	if err != nil {
 		if err.Error() == "review not found" {
 			c.JSON(http.StatusNotFound, models.NewErrorResponse("Review not found", err.Error()))
